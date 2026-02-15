@@ -1,0 +1,1 @@
+This is a discord bot for using https://github.com/jonigl/ollama-mcp-bridge
