@@ -1,4 +1,4 @@
-This is a discord bot for using https://github.com/jonigl/ollama-mcp-bridge but it will probably work with Ollama [Ollama](https://ollama.com/) as well.
+This is a discord bot for using https://github.com/jonigl/ollama-mcp-bridge but it will probably work with [Ollama](https://ollama.com/) as well.
 
 # Chresh AI Discord Bot
 
