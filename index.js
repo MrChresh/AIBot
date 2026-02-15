@@ -162,13 +162,15 @@ const handleCommand = async (client, message) => {
                         }
                     }
 
+                    
+                    if(messageContentThinking.length && content){
+                        message.channel.send(messageContentThinking);
+                        messageContentThinking = '';
+                        message.channel.send("**Content:**");
+                    }
+
                     messageContent = messageContent + content;
                     if (messageContent.length > 1500) {
-                        if(messageContentThinking.length){
-                            message.channel.send(messageContentThinking);
-                            messageContentThinking = '';
-                            message.channel.send("**Content:**");
-                        }
                         message.channel.send(messageContent);
                         messageContent = '';
                     }
