@@ -61,24 +61,18 @@ Start the Discord bot:
 ```bash
 node index.js
 ```
-To use 32k context use:
+To enter a prompt:
 ```
-?ai This is my prompt.
-```
-To use 128k context use:
-```
-?aih This is my prompt.
+/ai
 ```
 To clear context/chat history:
 ```
-?context
+/context
 ```
 Experimental, to cancel request use:
 ```
-?cancel
+/cancel
 ```
-
-If you're unhappy with the provided context check index.js for 'ai' (to find the command).
 
 ## Compatibility
 
