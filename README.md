@@ -14,6 +14,7 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Read text type files from attachments
 - Allowed users via allowed_users.json to prevent abuse
 - Chat history per user
+- Cancel command
 
 ## Prerequisites
 

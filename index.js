@@ -48,7 +48,7 @@ const handleCommand = async (client, message) => {
     }
     if (commandName == 'cancel') {
         if (!client.AIBot.requests[messageAuthor]) {
-            client.AIBot.requests[messageAuthor] = []
+            client.AIBot.requests[messageAuthor] = [];
             return message.channel.send('No requests found.');
         }
         client.AIBot.requests[messageAuthor].forEach((request) => {
