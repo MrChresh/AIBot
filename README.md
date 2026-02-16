@@ -11,6 +11,7 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Simple environment configuration
 - Supports Ollama models
 - Discord command interface for model interactions
+- Read text type files from attachments
 
 ## Prerequisites
 
