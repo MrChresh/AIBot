@@ -56,6 +56,17 @@ Start the Discord bot:
 ```bash
 node index.js
 ```
+To use 32k context use:
+```
+
+?ai This is my prompt.
+```
+To use 128k context use:
+```
+?aih This is my prompt.
+```
+
+If you're unhappy with the provided context check index.js at line 46
 
 ## Compatibility
 
