@@ -1,20 +1,27 @@
-import { GatewayIntentBits, Client } from 'discord.js';
+import { Client, Collection, Events, GatewayIntentBits, MessageFlags, REST, Routes } from 'discord.js';
 
 import 'dotenv/config'
 import fs from 'node:fs';
-import http from 'node:http'
+import path from 'node:path';
+import { fileURLToPath } from 'url';
+import url from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildVoiceStates
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.Guilds
     ]
 });
 
-client.on('ready', function () {
+client.commandsArr = [];
+client.commands = new Map();
+
+client.on('ready', async function () {
     console.log('Logged in as ' + client.user.tag);
     client.AIBot = {};
     try {
@@ -28,230 +35,74 @@ client.on('ready', function () {
     }
     client.AIBot.Messages = [];
     client.AIBot.requests = [];
+
+    // Grab all the command folders from the commands directory you created earlier
+    const foldersPath = path.join(__dirname, 'commands');
+    const commandFolders = [''];//fs.readdirSync(foldersPath);
+
+    for (const folder of commandFolders) {
+        // Grab all the command files from the commands directory you created earlier
+        const commandsPath = path.join(foldersPath, folder);
+        const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
+        // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
+        for (const file of commandFiles) {
+            const filePath = path.join(commandsPath, file);
+            const command = await import(url.pathToFileURL(filePath));
+            if ('data' in command.default && 'execute' in command.default) {
+                client.commandsArr.push(command.default.data.toJSON());
+                client.commands.set(command.default.data.name, command.default);
+            } else {
+                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+            }
+        }
+    }
+
+    // Construct and prepare an instance of the REST module
+    const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+
+    // and deploy your commands!
+
+    try {
+        console.log(`Started refreshing ${client.commandsArr.length} application (/) commands.`);
+
+        const data = rest.put(
+            Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+            { body: client.commandsArr }
+        );
+
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    } catch (error) {
+        console.error(error);
+    }
 });
 
-const handleCommand = async (client, message) => {
-    if (message.author.bot || !message.content.startsWith('?')) return;
 
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+    //console.log(interaction.client.commands)
+    const command = interaction.client.commands.get(interaction.commandName);
 
-    if (!client.AIBot.allowedUsers.includes(message.author.id)) {
-        return message.channel.send('You dont have access to this bot.');
+    if (!command) {
+        console.error(`No command matching ${interaction.commandName} was found.`);
+        return;
     }
 
-    const args = message.content.slice(1).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const messageAuthor = message.author.id;
-
-    if (commandName == 'context') {
-        client.AIBot.Messages[messageAuthor] = null;
-        return message.channel.send('Context has been cleared');
-    }
-    if (commandName == 'cancel') {
-        if (!client.AIBot.requests[messageAuthor]) {
-            client.AIBot.requests[messageAuthor] = [];
-            return message.channel.send('No requests found.');
-        }
-        client.AIBot.requests[messageAuthor].forEach((request) => {
-            request.abort();
-        })
-        client.AIBot.requests[messageAuthor] = null;
-        return message.channel.send('All requests have been cancelled.');
-    }
-    if (commandName == 'aih') {
-        var prompt = message.content.slice(4).trim();
-    } else {
-        var prompt = message.content.slice(3).trim();
-    }
-    const file = message.attachments.first()?.url;
-
-    if (commandName == 'ai' || commandName == 'aih') {
-        var context = 32000;
-        if (commandName == 'aih') {
-            context = 128000;
-        }
-        try {
-            if (file) {
-                message.channel.send('Reading the file(s)! Fetching data...');
-                let attachments = message.attachments;
-                for (let file of attachments) {
-                    //console.log(file[1]);
-                    // fetch the file from the external URL
-                    const responseFile = await fetch(file[1]?.url);
-
-                    // if there was an error send a message with the status
-                    if (!responseFile.ok) {
-                        return message.channel.send(
-                            'There was an error with fetching the file:',
-                            responseFile.statusText,
-                        );
-                    }
-
-                    const text = await responseFile.text();
-                    //console.log(text);
-                    prompt = prompt + "\nFilename: " + file.name + "\n" + text;
-                }
-
-            }
-
-
-            message.channel.send('Prompt will be sent, it might take some time.');
-            console.log(prompt);
-
-            const content = 'You are ' + client.user.tag + ', a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.';
-
-
-            if (!client.AIBot.Messages[messageAuthor]) {
-                client.AIBot.Messages[messageAuthor] = [
-                    {
-                        role: 'system',
-                        content: content
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ];
-            } else {
-                client.AIBot.Messages[messageAuthor][client.AIBot.Messages[messageAuthor].length] = {
-                    role: 'user',
-                    content: prompt
-                }
-            }
-
-
-            const assistantsCurrentMessageID = client.AIBot.Messages[messageAuthor].length;
-
-
-            var messages = []
-            client.AIBot.Messages[messageAuthor].forEach((message) => {
-                messages.push(message);
+    try {
+        await command.execute(interaction, client);
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+                content: 'There was an error while executing this command!',
+                flags: MessageFlags.Ephemeral,
             });
-            client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID] = {
-                role: 'assistant',
-                content: ''
-            }
-            if (!client.AIBot.requests[messageAuthor]) {
-                client.AIBot.requests[messageAuthor] = []
-            }
-
-
-            const postData = JSON.stringify({
-                'model': process.env.OLLAMA_MODEL,
-                'messages': messages,
-                'think': process.env.OLLAMA_THINK.toLowerCase() === 'true',
-                'stream': true,
-                'options': {
-                    'temperature': 0.2,
-                    'top_p': 0.35,
-                    'num_ctx': context,
-                    'seed': 42
-                }
+        } else {
+            await interaction.reply({
+                content: 'There was an error while executing this command!',
+                flags: MessageFlags.Ephemeral,
             });
-            console.log(postData);
-
-            const controller = new AbortController();
-            const signal = controller.signal;
-            const requestId = client.AIBot.requests[messageAuthor].push(controller) - 1;
-
-            const options = {
-                hostname: '127.0.0.1',
-                path: '/api/chat',
-                port: process.env.OLLAMA_PORT,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(postData),
-                },
-                signal: signal
-            };
-
-            //console.log(postData)
-            //console.log(options)
-
-            var messageContentThinking = '';
-            var messageContent = '';
-
-
-            const req = http.request(options, (res) => {
-                console.log(`STATUS: ${res.statusCode}`);
-                console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-                res.setEncoding('utf8');
-                res.on('data', (chunk) => {
-                    //console.log(`BODY: ${chunk}`);
-                    const obj = JSON.parse(chunk);
-                    const content = obj.message?.content;
-                    const thinking = obj.message?.thinking;
-
-                    if (thinking) {
-                        if (thinking.length) {
-                            messageContentThinking = messageContentThinking + thinking;
-                            if (messageContentThinking.length > 1500) {
-                                message.channel.send(messageContentThinking);
-                                messageContentThinking = '';
-                            }
-                        }
-                    }
-
-
-                    if (messageContentThinking.length && content) {
-                        message.channel.send(messageContentThinking);
-                        messageContentThinking = '';
-                        message.channel.send('**Content:**');
-                    }
-
-                    messageContent = messageContent + content;
-                    if (messageContent.length > 1500) {
-                        client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
-                        message.channel.send(messageContent);
-                        messageContent = '';
-                    }
-
-                });
-                res.on('end', () => {
-                    console.log('No more data in response.');
-                    message.channel.send(messageContent);
-                });
-            });
-
-            req.on('abort', () => {
-                console.log(`Request aborted.`);
-            });
-
-            req.on('error', (e) => {
-                console.error(`problem with request: ${e.message}`);
-            });
-
-            
-
-            // Write data to request body
-            req.write(postData);
-            req.end();
-
-            client.AIBot.requests[messageAuthor].splice(requestId, requestId);
-
-
-
-
-            /*const thoughtText = response.data.message.thinking;
-            const contentText = response.data.message.content;
- 
-            message.channel.send("**Thinking:**");
-            for (var i = 0; i < Math.ceil(thoughtText.length / 2000); i++) {
-                message.channel.send(thoughtText.slice(2000 * i, 2000 * i + 2000));
-            }
-            message.channel.send("**Content:**");
-            for (var i = 0; i < Math.ceil(contentText.length / 2000); i++) {
-                message.channel.send(contentText.slice(2000 * i, 2000 * i + 2000));
-            }*/
-        } catch (e) {
-            console.log(e);
         }
     }
-};
-
-
-client.on('messageCreate', message => handleCommand(client, message));
-
-
+});
 
 client.login(process.env.DISCORD_TOKEN);
