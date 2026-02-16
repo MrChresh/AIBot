@@ -13,6 +13,7 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Discord command interface for model interactions
 - Read text type files from attachments
 - Allowed users via allowed_users.json to prevent abuse
+- Chat history per user
 
 ## Prerequisites
 
@@ -66,11 +67,12 @@ To use 128k context use:
 ```
 ?aih This is my prompt.
 ```
+To clear context/chat history:
+```
+?context
+```
 
 If you're unhappy with the provided context check index.js at line 46
-
-## Info
-This bot dosent contain previous context, like the previous message.
 
 ## Compatibility
 
