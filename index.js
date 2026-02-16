@@ -20,17 +20,18 @@ client.on('ready', function () {
     try {
         const data = fs.readFileSync('allowed_users.json', 'utf8');
         console.log(JSON.parse(data));
-        client.AIBot.allowedUsers = JSON.parse(data)["allowedUsers"];
+        client.AIBot.allowedUsers = JSON.parse(data)['allowedUsers'];
 
     } catch (e) {
         console.error('Error loading allowed_users.json', e);
         client.AIBot.allowedUsers = [];
     }
     client.AIBot.Messages = [];
+    client.AIBot.requests = [];
 });
 
 const handleCommand = async (client, message) => {
-    if (message.author.bot || !message.content.startsWith("?")) return;
+    if (message.author.bot || !message.content.startsWith('?')) return;
 
 
     if (!client.AIBot.allowedUsers.includes(message.author.id)) {
@@ -44,6 +45,17 @@ const handleCommand = async (client, message) => {
     if (commandName == 'context') {
         client.AIBot.Messages[messageAuthor] = null;
         return message.channel.send('Context has been cleared');
+    }
+    if (commandName == 'cancel') {
+        if (!client.AIBot.requests[messageAuthor]) {
+            client.AIBot.requests[messageAuthor] = []
+            return message.channel.send('No requests found.');
+        }
+        client.AIBot.requests[messageAuthor].forEach((request) => {
+            request.abort();
+        })
+        client.AIBot.requests[messageAuthor] = null;
+        return message.channel.send('All requests have been cancelled.');
     }
     if (commandName == 'aih') {
         var prompt = message.content.slice(4).trim();
@@ -85,7 +97,7 @@ const handleCommand = async (client, message) => {
             message.channel.send('Prompt will be sent, it might take some time.');
             console.log(prompt);
 
-            const content = "You are " + client.user.tag + ", a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.";
+            const content = 'You are ' + client.user.tag + ', a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.';
 
 
             if (!client.AIBot.Messages[messageAuthor]) {
@@ -118,21 +130,28 @@ const handleCommand = async (client, message) => {
                 role: 'assistant',
                 content: ''
             }
+            if (!client.AIBot.requests[messageAuthor]) {
+                client.AIBot.requests[messageAuthor] = []
+            }
 
 
             const postData = JSON.stringify({
-                "model": process.env.OLLAMA_MODEL,
-                "messages": messages,
-                "think": process.env.OLLAMA_THINK.toLowerCase() === 'true',
-                "stream": true,
-                "options": {
-                    "temperature": 0.2,
-                    "top_p": 0.35,
-                    "num_ctx": context,
-                    "seed": 42
+                'model': process.env.OLLAMA_MODEL,
+                'messages': messages,
+                'think': process.env.OLLAMA_THINK.toLowerCase() === 'true',
+                'stream': true,
+                'options': {
+                    'temperature': 0.2,
+                    'top_p': 0.35,
+                    'num_ctx': context,
+                    'seed': 42
                 }
             });
             console.log(postData);
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const requestId = client.AIBot.requests[messageAuthor].push(controller) - 1;
 
             const options = {
                 hostname: '127.0.0.1',
@@ -143,6 +162,7 @@ const handleCommand = async (client, message) => {
                     'Content-Type': 'application/json',
                     'Content-Length': Buffer.byteLength(postData),
                 },
+                signal: signal
             };
 
             //console.log(postData)
@@ -150,6 +170,7 @@ const handleCommand = async (client, message) => {
 
             var messageContentThinking = '';
             var messageContent = '';
+
 
             const req = http.request(options, (res) => {
                 console.log(`STATUS: ${res.statusCode}`);
@@ -175,7 +196,7 @@ const handleCommand = async (client, message) => {
                     if (messageContentThinking.length && content) {
                         message.channel.send(messageContentThinking);
                         messageContentThinking = '';
-                        message.channel.send("**Content:**");
+                        message.channel.send('**Content:**');
                     }
 
                     messageContent = messageContent + content;
@@ -192,13 +213,21 @@ const handleCommand = async (client, message) => {
                 });
             });
 
+            req.on('abort', () => {
+                console.log(`Request aborted.`);
+            });
+
             req.on('error', (e) => {
                 console.error(`problem with request: ${e.message}`);
             });
 
+            
+
             // Write data to request body
             req.write(postData);
             req.end();
+
+            client.AIBot.requests[messageAuthor].splice(requestId, requestId);
 
 
 
@@ -221,7 +250,7 @@ const handleCommand = async (client, message) => {
 };
 
 
-client.on("messageCreate", message => handleCommand(client, message));
+client.on('messageCreate', message => handleCommand(client, message));
 
 
 
