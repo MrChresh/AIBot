@@ -58,7 +58,6 @@ node index.js
 ```
 To use 32k context use:
 ```
-
 ?ai This is my prompt.
 ```
 To use 128k context use:
@@ -67,6 +66,9 @@ To use 128k context use:
 ```
 
 If you're unhappy with the provided context check index.js at line 46
+
+## Info
+This bot dosent contain previous context, like the previous message.
 
 ## Compatibility
 
