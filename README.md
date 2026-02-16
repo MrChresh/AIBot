@@ -12,6 +12,7 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Supports Ollama models
 - Discord command interface for model interactions
 - Read text type files from attachments
+- Response streaming (will send every 1500 characters)
 - Allowed users via allowed_users.json to prevent abuse
 - Chat history per user
 - Cancel command
