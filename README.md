@@ -77,7 +77,7 @@ Experimental, to cancel request use:
 ?cancel
 ```
 
-If you're unhappy with the provided context check index.js for 'ai' (ton find the command).
+If you're unhappy with the provided context check index.js for 'ai' (to find the command).
 
 ## Compatibility
 
