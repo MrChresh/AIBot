@@ -17,7 +17,7 @@ export default {
             .setDescription('The context size you want to use')
             .setMinValue(4000)
             .setMaxValue(Number(process.env.MAX_CONTEXT))
-            .setRequired(true))
+            .setRequired(false))
         .addAttachmentOption((option) =>
             option
                 .setName('text1')
@@ -48,10 +48,14 @@ export default {
         if (!client.AIBot.allowedUsers.includes(interaction.user.id)) {
             return interaction.reply('You dont have access to this bot.');
         }
-        const context = interaction.options.getNumber('context');
+        var context = interaction.options?.getNumber('context');
         const messageAuthor = interaction.user.id;
         const channel = interaction.channel;
         var prompt = interaction.options.getString('prompt');
+
+        if(!context) {
+            context = Number(process.env.DEFAULT_CONTEXT)
+        }
 
         try {
             if (interaction.options.getAttachment('text1')?.url || interaction.options.getAttachment('text2')?.url || interaction.options.getAttachment('text3')?.url || interaction.options.getAttachment('text4')?.url || interaction.options.getAttachment('text5')?.url) {

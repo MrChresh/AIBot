@@ -56,6 +56,9 @@ OLLAMA_THINK=true
 
 # Maximal settable context
 MAX_CONTEXT=384000
+
+# Set default context
+DEFAULT_CONTEXT=93000
 ```
 
 ## Usage
