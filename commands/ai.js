@@ -15,8 +15,8 @@ export default {
         .addNumberOption((option) => option
             .setName('context')
             .setDescription('The context size you want to use')
-            .setMinValue(4096)
-            .setMaxValue(128000)
+            .setMinValue(4000)
+            .setMaxValue(Number(process.env.MAX_CONTEXT))
             .setRequired(true))
         .addAttachmentOption((option) =>
             option

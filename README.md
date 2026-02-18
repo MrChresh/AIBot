@@ -53,6 +53,9 @@ OLLAMA_MODEL='qwen3:30b'
 
 # Whether to enable the think parameter
 OLLAMA_THINK=true
+
+# Maximal settable context
+MAX_CONTEXT=384000
 ```
 
 ## Usage
