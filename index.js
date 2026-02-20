@@ -38,7 +38,10 @@ client.on('ready', async function () {
 
     // Grab all the command folders from the commands directory you created earlier
     const foldersPath = path.join(__dirname, 'commands');
-    const commandFolders = [''];//fs.readdirSync(foldersPath);
+    console.log(foldersPath)
+    const commandFolders = [''].concat(fs.readdirSync(foldersPath,{ withFileTypes: true })
+                            .filter(dirent => dirent.isDirectory())
+                            .map(dirent => dirent.name));
 
     for (const folder of commandFolders) {
         // Grab all the command files from the commands directory you created earlier
@@ -65,12 +68,12 @@ client.on('ready', async function () {
     try {
         console.log(`Started refreshing ${client.commandsArr.length} application (/) commands.`);
 
-        const data = rest.put(
+        /*const data = rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
             { body: client.commandsArr }
         );
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);*/
     } catch (error) {
         console.error(error);
     }
