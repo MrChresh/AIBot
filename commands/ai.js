@@ -57,8 +57,10 @@ export default {
             context = Number(process.env.DEFAULT_CONTEXT)
         }
 
+        const hasAttachments = ['text1', 'text2', 'text3', 'text4', 'text5'].some(name => interaction.options.getAttachment(name)?.url);
+
         try {
-            if (interaction.options.getAttachment('text1')?.url || interaction.options.getAttachment('text2')?.url || interaction.options.getAttachment('text3')?.url || interaction.options.getAttachment('text4')?.url || interaction.options.getAttachment('text5')?.url) {
+            if (hasAttachments) {
                 channel.send('Reading the file(s)! Fetching data...');
                 let attachments = [interaction.options.getAttachment('text1'), interaction.options.getAttachment('text2'), interaction.options.getAttachment('text3'), interaction.options.getAttachment('text4'), interaction.options.getAttachment('text5')];
                 for (let file of attachments) {
@@ -113,10 +115,8 @@ export default {
             const assistantsCurrentMessageID = client.AIBot.Messages[messageAuthor].length;
 
 
-            var messages = []
-            client.AIBot.Messages[messageAuthor].forEach((message) => {
-                messages.push(message);
-            });
+            const messages = [...client.AIBot.Messages[messageAuthor]];
+
             client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID] = {
                 role: 'assistant',
                 content: ''
@@ -165,7 +165,7 @@ export default {
 
             const req = http.request(options, (res) => {
                 console.log(`STATUS: ${res.statusCode}`);
-                console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+                //console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
                 res.setEncoding('utf8');
                 res.on('data', (chunk) => {
                     //console.log(`BODY: ${chunk}`);
@@ -175,8 +175,10 @@ export default {
 
                     if (thinking) {
                         if (thinking.length) {
+                            process.stdout.write(thinking);
                             messageContentThinking = messageContentThinking + thinking;
-                            if (messageContentThinking.length > 1500) {
+                            if (messageContentThinking.length > 1900) {
+                            //if (thinking.includes("\n") || messageContentThinking.length > 1900) {
                                 channel.send(messageContentThinking);
                                 messageContentThinking = '';
                             }
@@ -189,13 +191,20 @@ export default {
                         messageContentThinking = '';
                         channel.send('**Content:**');
                     }
-
-                    messageContent = messageContent + content;
-                    if (messageContent.length > 1500) {
-                        client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
-                        channel.send(messageContent);
-                        messageContent = '';
+                    if(content) {
+                        if (content.length) {
+                            process.stdout.write(content);
+                            messageContent = messageContent + content;
+                            if (messageContent.length > 1500) {
+                            //if (content.includes("\n") || messageContent.length > 1900) {
+                                client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
+                                channel.send(messageContent);
+                                messageContent = '';
+                            }
+                        }
                     }
+                    
+
 
                 });
                 res.on('end', () => {
