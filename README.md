@@ -55,7 +55,7 @@ OLLAMA_MODEL='qwen3:30b'
 OLLAMA_THINK=true
 
 # Maximal settable context
-MAX_CONTEXT=384000
+MAX_CONTEXT=256000
 
 # Set default context
 DEFAULT_CONTEXT=93000
