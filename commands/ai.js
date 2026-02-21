@@ -14,8 +14,8 @@ export default {
         )
         .addNumberOption((option) => option
             .setName('context')
-            .setDescription('The context size you want to use')
-            .setMinValue(4000)
+            .setDescription('Additional context you want to add.')
+            .setMinValue(0)
             .setMaxValue(Number(process.env.MAX_CONTEXT))
             .setRequired(false))
         .addAttachmentOption((option) =>
@@ -115,7 +115,13 @@ export default {
             const assistantsCurrentMessageID = client.AIBot.Messages[messageAuthor].length;
 
 
-            const messages = [...client.AIBot.Messages[messageAuthor]];
+            const messages = client.AIBot.Messages[messageAuthor];
+            var messagesLength = 4000;
+
+            messages.forEach((message) => {
+                messagesLength += message.content.split(/\s+|[.,!?;:]/g).filter(token => token.length > 0).length;
+            });
+            
 
             client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID] = {
                 role: 'assistant',
@@ -132,9 +138,9 @@ export default {
                 'think': process.env.OLLAMA_THINK.toLowerCase() === 'true',
                 'stream': true,
                 'options': {
-                    'temperature': 0.2,
+                    'temperature': 0.6,
                     'top_p': 0.35,
-                    'num_ctx': context,
+                    'num_ctx': Number(messagesLength + context),
                     'seed': 42
                 }
             });
