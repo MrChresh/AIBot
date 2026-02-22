@@ -185,7 +185,7 @@ export default {
                             messageContentThinking = messageContentThinking + thinking;
                             if (messageContentThinking.length > 1900) {
                             //if (thinking.includes("\n") || messageContentThinking.length > 1900) {
-                                channel.send(messageContentThinking);
+                                if(messageContentThinking) { channel.send(messageContentThinking) };
                                 messageContentThinking = '';
                             }
                         }
@@ -193,7 +193,7 @@ export default {
 
 
                     if (messageContentThinking.length && content) {
-                        channel.send(messageContentThinking);
+                        if(messageContentThinking) { channel.send(messageContentThinking); }
                         messageContentThinking = '';
                         channel.send('**Content:**');
                     }
@@ -204,7 +204,7 @@ export default {
                             if (messageContent.length > 1500) {
                             //if (content.includes("\n") || messageContent.length > 1900) {
                                 client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
-                                channel.send(messageContent);
+                                if(messageContent) { channel.send(messageContent)};
                                 messageContent = '';
                             }
                         }
