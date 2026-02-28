@@ -1,59 +1,40 @@
 import { SlashCommandBuilder } from 'discord.js';
+import {default as CommandBuilder} from '../classes/CommandBuilder.js'
 import 'dotenv/config'
 import http from 'node:http'
 
 export default {
-    data: new SlashCommandBuilder()
-        .setName('ai')
-        .setDescription('Prompts the ai')
-        .addStringOption((option) =>
-            option
-                .setName('prompt')
-                .setDescription('The message you send to the ai.')
-                .setRequired(true),
-        )
-        .addNumberOption((option) => option
-            .setName('context')
-            .setDescription('Additional context you want to add.')
-            .setMinValue(0)
-            .setMaxValue(Number(process.env.MAX_CONTEXT) ?? 4000)
-            .setRequired(false))
-        .addAttachmentOption((option) =>
-            option
-                .setName('text1')
-                .setDescription('Attach text file (optional)')
+    data: new CommandBuilder()
+            .setName('ai')
+            .setDescription('Prompts the ai')
+            .addStringOption((option) =>
+                option
+                    .setName('prompt')
+                    .setDescription('The message you send to the ai.')
+                    .setRequired(true),
+            )
+            .addNumberOption((option) => option
+                .setName('context')
+                .setDescription('Additional context you want to add.')
+                .setMinValue(Number(process.env.MIN_CONTEXT) ?? 4000)
+                .setMaxValue(Number(process.env.MAX_CONTEXT) ?? 4000)
                 .setRequired(false))
-        .addAttachmentOption((option) =>
-            option
-                .setName('text2')
-                .setDescription('Attach text file (optional)')
-                .setRequired(false))
-        .addAttachmentOption((option) =>
-            option
-                .setName('text3')
-                .setDescription('Attach text file (optional)')
-                .setRequired(false))
-        .addAttachmentOption((option) =>
-            option
-                .setName('text4')
-                .setDescription('Attach text file (optional)')
-                .setRequired(false))
-        .addAttachmentOption((option) =>
-            option
-                .setName('text5')
-                .setDescription('Attach text file (optional)')
-                .setRequired(false)),
+            .addCustomTextAttachmentOptions(5),
     execute: async (interaction) => {
         const client = interaction.client;
         if (!client.AIBot.allowedUsers.includes(interaction.user.id)) {
             return interaction.reply('You dont have access to this bot.');
         }
-        var context = interaction.options?.getNumber('context') ?? Number(process.env.DEFAULT_CONTEXT) ?? 4096;;
+        var context = interaction.options?.getNumber('context') ?? Number(process.env.DEFAULT_CONTEXT);
         const messageAuthor = interaction.user.id;
         const channel = interaction.channel;
         var prompt = interaction.options.getString('prompt');
 
-        const attachmentNames = ['text1', 'text2', 'text3', 'text4', 'text5'];
+        var attachmentNames = [];
+        for (let i = 1; i <= 5; i++) {
+            attachmentNames.push(`text${i}`);
+        }
+        
         const hasAttachments = attachmentNames.some(name => interaction.options.getAttachment(name)?.url);
 
         try {
@@ -63,7 +44,6 @@ export default {
                     .map(name => interaction.options.getAttachment(name))
                     .filter(file => file !== null);
                 if (attachments.length > 0) {
-                    channel.send('Reading files... Fetching data...');
                     for (const file of attachments) {
                         const response = await fetch(file?.url);
                         if (!response.ok) {
@@ -77,7 +57,6 @@ export default {
                     }
                 }
             }
-
 
             interaction.reply('Prompt will be sent, it might take some time.');
             console.log(prompt);
@@ -106,18 +85,18 @@ export default {
 
 
             const messages = client.AIBot.Messages[messageAuthor];
-            var messagesLength = 4000;
+
+            /*var messagesLength = 4000;
 
             messages.forEach((message) => {
                 messagesLength += message.content.split(/\s+|[.,!?;:]/g).filter(token => token.length > 0).length;
-            });
+            });*/
 
 
 
             if (!client.AIBot.requests[messageAuthor]) {
                 client.AIBot.requests[messageAuthor] = []
             }
-
 
 
             const postData = JSON.stringify({
@@ -128,7 +107,7 @@ export default {
                 'options': {
                     'temperature': 0.6,
                     'top_p': 0.35,
-                    'num_ctx': Number(context),//Number(messagesLength + context),
+                    'num_ctx': Number(context),
                     'seed': 42
                 }
             });
