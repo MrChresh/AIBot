@@ -140,7 +140,7 @@ export default {
                 'options': {
                     'temperature': 0.6,
                     'top_p': 0.35,
-                    'num_ctx': Number(messagesLength + context),
+                    'num_ctx': Number(context)//Number(messagesLength + context),
                     'seed': 42
                 }
             });
@@ -215,7 +215,7 @@ export default {
                 });
                 res.on('end', () => {
                     console.log('No more data in response.');
-                    channel.send(messageContent);
+                    if(messageContent) {channel.send(messageContent);}
                 });
             });
 
