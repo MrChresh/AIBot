@@ -221,8 +221,6 @@ export default {
                         role: 'assistant',
                         content: fullAssistantMessage
                     });
-                    console.log(client.AIBot.Messages[messageAuthor]);
-                    console.log(fullAssistantMessage);
                 });
             });
 
