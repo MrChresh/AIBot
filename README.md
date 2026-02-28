@@ -62,7 +62,7 @@ MAX_CONTEXT=128000
 MIN_CONTEXT=8192
 
 # Set default additional context
-DEFAULT_CONTEXT=0
+DEFAULT_CONTEXT=32000
 ```
 
 ## Usage
