@@ -1,25 +1,25 @@
-import { SlashCommandBuilder } from 'discord.js';
-import {default as CommandBuilder} from '../classes/CommandBuilder.js'
+import { default as CommandBuilder } from '../classes/CommandBuilder.js'
 import 'dotenv/config'
 import http from 'node:http'
+import { encode, decode } from 'node-base64-image';
 
 export default {
     data: new CommandBuilder()
-            .setName('ai')
-            .setDescription('Prompts the ai')
-            .addStringOption((option) =>
-                option
-                    .setName('prompt')
-                    .setDescription('The message you send to the ai.')
-                    .setRequired(true),
-            )
-            .addNumberOption((option) => option
-                .setName('context')
-                .setDescription('Additional context you want to add.')
-                .setMinValue(Number(process.env.MIN_CONTEXT) ?? 4000)
-                .setMaxValue(Number(process.env.MAX_CONTEXT) ?? 4000)
-                .setRequired(false))
-            .addCustomTextAttachmentOptions(5),
+        .setName('ai')
+        .setDescription('Prompts the ai')
+        .addStringOption((option) =>
+            option
+                .setName('prompt')
+                .setDescription('The message you send to the ai.')
+                .setRequired(true),
+        )
+        .addNumberOption((option) => option
+            .setName('context')
+            .setDescription('Additional context you want to add.')
+            .setMinValue(Number(process.env.MIN_CONTEXT) ?? 4000)
+            .setMaxValue(Number(process.env.MAX_CONTEXT) ?? 4000)
+            .setRequired(false))
+        .addCustomTextAttachmentOptions(5),
     execute: async (interaction) => {
         const client = interaction.client;
         if (!client.AIBot.allowedUsers.includes(interaction.user.id)) {
@@ -29,12 +29,13 @@ export default {
         const messageAuthor = interaction.user.id;
         const channel = interaction.channel;
         var prompt = interaction.options.getString('prompt');
+        var images = [];
 
         var attachmentNames = [];
         for (let i = 1; i <= 5; i++) {
-            attachmentNames.push(`text${i}`);
+            attachmentNames.push(`file${i}`);
         }
-        
+
         const hasAttachments = attachmentNames.some(name => interaction.options.getAttachment(name)?.url);
 
         try {
@@ -45,40 +46,56 @@ export default {
                     .filter(file => file !== null);
                 if (attachments.length > 0) {
                     for (const file of attachments) {
-                        const response = await fetch(file?.url);
-                        if (!response.ok) {
-                            return channel.send(
-                                'There was an error with fetching the file:',
-                                response.statusText
-                            );
+                        //console.log(file)
+                        if (file.contentType.startsWith('text')) {
+                            const response = await fetch(file?.url);
+                            if (!response.ok) {
+                                return channel.send(
+                                    'There was an error with fetching the file:',
+                                    file.name
+                                );
+                            }
+                            const text = await response.text();
+                            prompt = prompt + "\nFilename: " + file.name + "\n" + text;
                         }
-                        const text = await response.text();
-                        prompt = prompt + "\nFilename: " + file.name + "\n" + text;
+                        if (file.contentType.startsWith('image')) {
+                            const image = await encode(file?.url, {string: true});
+                            //console.log(image)
+                            if (!image) {
+                                return channel.send(
+                                    'There was an error with fetching the file:',
+                                    file.name
+                                );
+                            }
+                            images.push(image);
+                        }
                     }
                 }
             }
 
             interaction.reply('Prompt will be sent, it might take some time.');
-            console.log(prompt);
+            //console.log(prompt);
 
-            const content = 'You are ' + client.user.tag + ', a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.';
+            const systemPrompt = 'You are ' + client.user.tag + ', a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.';
 
 
             if (!client.AIBot.Messages[messageAuthor]) {
                 client.AIBot.Messages[messageAuthor] = [
                     {
                         role: 'system',
-                        content: content
+                        content: systemPrompt
                     },
                     {
                         role: 'user',
-                        content: prompt
+                        content: prompt,
+                        images: images
                     }
                 ];
             } else {
                 client.AIBot.Messages[messageAuthor].push({
                     role: 'user',
-                    content: prompt
+                    content: prompt,
+                    images: images
                 })
             }
 

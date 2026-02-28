@@ -49,7 +49,7 @@ DISCORD_TOKEN='your_discord_bot_token_here'
 OLLAMA_PORT=11000
 
 # Ollama Model to use
-OLLAMA_MODEL='qwen3:30b'
+OLLAMA_MODEL='qwen3.5:35b'
 
 # Whether to enable the think parameter
 OLLAMA_THINK=true

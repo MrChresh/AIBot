@@ -7,7 +7,7 @@ export default class CommandBuilder extends SlashCommandBuilder {
     addCustomTextAttachmentOptions(count) {
         for (let i = 1; i <= count; i++) {
             this.addAttachmentOption((option) =>
-                option.setName(`text${i}`).setDescription(`Attach text file (optional)`)
+                option.setName(`file${i}`).setDescription(`Attach a text or an image file (optional)`)
             )
         }
         return this;

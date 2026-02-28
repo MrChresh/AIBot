@@ -68,12 +68,12 @@ client.on('ready', async function () {
     try {
         console.log(`Started refreshing ${client.commandsArr.length} application (/) commands.`);
 
-        /*const data = rest.put(
+        const data = rest.put(
             Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
             { body: client.commandsArr }
         );
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);*/
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
         console.error(error);
     }
