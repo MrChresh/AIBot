@@ -16,7 +16,7 @@ export default {
             .setName('context')
             .setDescription('Additional context you want to add.')
             .setMinValue(0)
-            .setMaxValue(Number(process.env.MAX_CONTEXT))
+            .setMaxValue(Number(process.env.MAX_CONTEXT) ?? 4000)
             .setRequired(false))
         .addAttachmentOption((option) =>
             option
@@ -48,42 +48,34 @@ export default {
         if (!client.AIBot.allowedUsers.includes(interaction.user.id)) {
             return interaction.reply('You dont have access to this bot.');
         }
-        var context = interaction.options?.getNumber('context');
+        var context = interaction.options?.getNumber('context') ?? Number(process.env.DEFAULT_CONTEXT) ?? 4096;;
         const messageAuthor = interaction.user.id;
         const channel = interaction.channel;
         var prompt = interaction.options.getString('prompt');
 
-        if (!context) {
-            context = Number(process.env.DEFAULT_CONTEXT)
-        }
-
-        const hasAttachments = ['text1', 'text2', 'text3', 'text4', 'text5'].some(name => interaction.options.getAttachment(name)?.url);
+        const attachmentNames = ['text1', 'text2', 'text3', 'text4', 'text5'];
+        const hasAttachments = attachmentNames.some(name => interaction.options.getAttachment(name)?.url);
 
         try {
             if (hasAttachments) {
                 channel.send('Reading the file(s)! Fetching data...');
-                let attachments = [interaction.options.getAttachment('text1'), interaction.options.getAttachment('text2'), interaction.options.getAttachment('text3'), interaction.options.getAttachment('text4'), interaction.options.getAttachment('text5')];
-                for (let file of attachments) {
-                    console.log(file);
-                    // fetch the file from the external URL
-                    if (file != null) {
-
-                        const responseFile = await fetch(file?.url);
-
-                        // if there was an error send a message with the status
-                        if (!responseFile.ok) {
+                const attachments = attachmentNames
+                    .map(name => interaction.options.getAttachment(name))
+                    .filter(file => file !== null);
+                if (attachments.length > 0) {
+                    channel.send('Reading files... Fetching data...');
+                    for (const file of attachments) {
+                        const response = await fetch(file?.url);
+                        if (!response.ok) {
                             return channel.send(
                                 'There was an error with fetching the file:',
-                                responseFile.statusText,
+                                response.statusText
                             );
                         }
-
-                        const text = await responseFile.text();
-                        //console.log(text);
+                        const text = await response.text();
                         prompt = prompt + "\nFilename: " + file.name + "\n" + text;
                     }
                 }
-
             }
 
 
@@ -105,10 +97,10 @@ export default {
                     }
                 ];
             } else {
-                client.AIBot.Messages[messageAuthor][client.AIBot.Messages[messageAuthor].length] = {
+                client.AIBot.Messages[messageAuthor].push({
                     role: 'user',
                     content: prompt
-                }
+                })
             }
 
 
@@ -149,7 +141,7 @@ export default {
             const options = {
                 hostname: '127.0.0.1',
                 path: '/api/chat',
-                port: process.env.OLLAMA_PORT,
+                port: Number(process.env.OLLAMA_PORT),
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,8 +193,8 @@ export default {
                             fullAssistantMessage += content;
                             if (messageContent.length > 1900) {
                                 //if (content.includes("\n") || messageContent.length > 1900) {
-                                
-                                if (messageContent) { 
+
+                                if (messageContent) {
                                     channel.send(messageContent);
                                 };
 
@@ -240,7 +232,7 @@ export default {
             req.write(postData);
             req.end();
 
-            client.AIBot.requests[messageAuthor].splice(requestId, requestId);
+            client.AIBot.requests[messageAuthor].splice(requestId, 1);
 
         } catch (e) {
             console.log(e);
