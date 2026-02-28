@@ -53,7 +53,7 @@ export default {
         const channel = interaction.channel;
         var prompt = interaction.options.getString('prompt');
 
-        if(!context) {
+        if (!context) {
             context = Number(process.env.DEFAULT_CONTEXT)
         }
 
@@ -112,8 +112,6 @@ export default {
             }
 
 
-            const assistantsCurrentMessageID = client.AIBot.Messages[messageAuthor].length;
-
 
             const messages = client.AIBot.Messages[messageAuthor];
             var messagesLength = 4000;
@@ -121,15 +119,13 @@ export default {
             messages.forEach((message) => {
                 messagesLength += message.content.split(/\s+|[.,!?;:]/g).filter(token => token.length > 0).length;
             });
-            
 
-            client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID] = {
-                role: 'assistant',
-                content: ''
-            }
+
+
             if (!client.AIBot.requests[messageAuthor]) {
                 client.AIBot.requests[messageAuthor] = []
             }
+
 
 
             const postData = JSON.stringify({
@@ -167,6 +163,7 @@ export default {
 
             var messageContentThinking = '';
             var messageContent = '';
+            var fullAssistantMessage = '';
 
 
             const req = http.request(options, (res) => {
@@ -184,8 +181,8 @@ export default {
                             process.stdout.write(thinking);
                             messageContentThinking = messageContentThinking + thinking;
                             if (messageContentThinking.length > 1900) {
-                            //if (thinking.includes("\n") || messageContentThinking.length > 1900) {
-                                if(messageContentThinking) { channel.send(messageContentThinking) };
+                                //if (thinking.includes("\n") || messageContentThinking.length > 1900) {
+                                if (messageContentThinking) { channel.send(messageContentThinking) };
                                 messageContentThinking = '';
                             }
                         }
@@ -193,29 +190,39 @@ export default {
 
 
                     if (messageContentThinking.length && content) {
-                        if(messageContentThinking) { channel.send(messageContentThinking); }
+                        if (messageContentThinking) { channel.send(messageContentThinking); }
                         messageContentThinking = '';
                         channel.send('**Content:**');
                     }
-                    if(content) {
+                    if (content) {
                         if (content.length) {
                             process.stdout.write(content);
-                            messageContent = messageContent + content;
+                            messageContent += content;
+                            fullAssistantMessage += content;
                             if (messageContent.length > 1900) {
-                            //if (content.includes("\n") || messageContent.length > 1900) {
-                                client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
-                                if(messageContent) { channel.send(messageContent)};
+                                //if (content.includes("\n") || messageContent.length > 1900) {
+                                
+                                if (messageContent) { 
+                                    channel.send(messageContent);
+                                };
+
                                 messageContent = '';
                             }
                         }
                     }
-                    
+
 
 
                 });
                 res.on('end', () => {
                     console.log('No more data in response.');
-                    if(messageContent) {channel.send(messageContent);}
+                    if (messageContent) { channel.send(messageContent); }
+                    client.AIBot.Messages[messageAuthor].push({
+                        role: 'assistant',
+                        content: fullAssistantMessage
+                    });
+                    console.log(client.AIBot.Messages[messageAuthor]);
+                    console.log(fullAssistantMessage);
                 });
             });
 
@@ -226,6 +233,8 @@ export default {
             req.on('error', (e) => {
                 console.error(`problem with request: ${e.message}`);
             });
+
+
 
 
 
