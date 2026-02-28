@@ -73,7 +73,7 @@ client.on('ready', async function () {
             { body: client.commandsArr }
         );
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+        console.log(`Successfully reloaded ${client.commandsArr.length} application (/) commands.`);
     } catch (error) {
         console.error(error);
     }
