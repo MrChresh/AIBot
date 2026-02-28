@@ -201,7 +201,7 @@ export default {
                         if (content.length) {
                             process.stdout.write(content);
                             messageContent = messageContent + content;
-                            if (messageContent.length > 1500) {
+                            if (messageContent.length > 1900) {
                             //if (content.includes("\n") || messageContent.length > 1900) {
                                 client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content = client.AIBot.Messages[messageAuthor][assistantsCurrentMessageID].content + messageContent;
                                 if(messageContent) { channel.send(messageContent)};
