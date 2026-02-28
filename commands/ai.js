@@ -140,7 +140,7 @@ export default {
                 'options': {
                     'temperature': 0.6,
                     'top_p': 0.35,
-                    'num_ctx': Number(context)//Number(messagesLength + context),
+                    'num_ctx': Number(context),//Number(messagesLength + context),
                     'seed': 42
                 }
             });
