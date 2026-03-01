@@ -108,13 +108,6 @@ class MultiServerManager {
 
     for (const [id, server] of this.servers.entries()) {
       for (var tool of server.capabilities.tools) {
-        /*tool.type = 'function';
-        tool.function = {};
-        tool.function.name = tool.name;
-        tool.function.description = tool.description;
-        tool.function.parameters = tool.inputSchema;*/
-
-
         allTools.push({ serverId: id, tool });
       }
     }
@@ -122,17 +115,19 @@ class MultiServerManager {
     return allTools;
   }
   getAllToolsAdapter(): { tool: any }[] {
-    const allTools: { serverId: string, tool: any }[] = [];
+    const allTools: any[] = [];
 
     for (const [id, server] of this.servers.entries()) {
       for (var tool of server.capabilities.tools) {
-        tool.type = 'function';
-        tool.function = {};
-        tool.function.name = tool.name;
-        tool.function.description = tool.description;
-        tool.function.parameters = tool.inputSchema;
-
-        allTools.push(tool);
+        var returnTool = {
+          type: 'function',
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.inputSchema
+          }
+        };
+        allTools.push(returnTool);
       }
     }
 
@@ -217,22 +212,22 @@ class MCPClient {
     }
     messages.forEach((message) => {
 
-      if(!Array.isArray(message.content)){
+      if (!Array.isArray(message.content)) {
         message.content = [
-        {
-          type: 'text', text: message.content
+          {
+            type: 'text', text: message.content
+          }
+        ]
+        if (message?.images) {
+          message.images.forEach((image: any) => {
+            message.content.push(
+              {
+                type: "image_url", image_url: {
+                  url: image,
+                }
+              })
+          })
         }
-      ]
-      if (message?.images) {
-        message.images.forEach((image:any) => {
-          message.content.push(
-            {
-              type: "image_url", image_url: {
-                url: image,
-              }
-            })
-        })
-      }
       }
 
     })
