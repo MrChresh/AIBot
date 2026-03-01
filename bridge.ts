@@ -215,6 +215,25 @@ class MCPClient {
         content: systemPrompt
       });
     }
+    /*messages.forEach((message) => {
+
+      message.content = [
+        {
+          type: 'text', text: message.content
+        }
+      ]
+      if (message?.images) {
+        message.images.forEach((image:any) => {
+          message.content.push(
+            {
+              type: "image_url", image_url: {
+                url: image,
+              }
+            })
+        })
+      }
+    })
+    console.log(messages);*/
 
     var finalText: string[] = [];
 
