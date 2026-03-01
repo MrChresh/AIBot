@@ -67,7 +67,7 @@ export default {
                                     file.name
                                 );
                             }
-                            images.push(image);
+                            images.push('data:' + file.contentType + 'base64,' + image);
                         }
                     }
                 }
@@ -128,7 +128,7 @@ export default {
                     'seed': 42
                 }
             });
-            console.log(postData);
+            //console.log(postData);
 
             const controller = new AbortController();
             const signal = controller.signal;
@@ -209,15 +209,18 @@ export default {
                         role: 'assistant',
                         content: fullAssistantMessage
                     });
+                    channel.send('No more data in response.');
                 });
             });
 
             req.on('abort', () => {
                 console.log(`Request aborted.`);
+                channel.send('Request has been aborted.');
             });
 
             req.on('error', (e) => {
                 console.error(`problem with request: ${e.message}`);
+                channel.send('An error occured with the request.');
             });
 
 

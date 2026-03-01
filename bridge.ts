@@ -194,7 +194,7 @@ class MCPClient {
 
   async processQuery(data: any, doInstructions: boolean, httpResponse: http.ServerResponse): Promise<string> {
 
-    var messages: MessageParam[] = data.messages;
+    var messages: any[] = data.messages;
 
 
 
@@ -215,7 +215,7 @@ class MCPClient {
         content: systemPrompt
       });
     }
-    /*messages.forEach((message) => {
+    messages.forEach((message) => {
 
       message.content = [
         {
@@ -233,7 +233,6 @@ class MCPClient {
         })
       }
     })
-    console.log(messages);*/
 
     var finalText: string[] = [];
 
@@ -446,7 +445,7 @@ async function main() {
 
     }
 
-    console.log(client.MCPServerManager.getAllTools());
+    //console.log(client.MCPServerManager.getAllTools());
 
 
     const server = http.createServer();
