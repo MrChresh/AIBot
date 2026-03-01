@@ -217,7 +217,8 @@ class MCPClient {
     }
     messages.forEach((message) => {
 
-      message.content = [
+      if(!Array.isArray(message.content)){
+        message.content = [
         {
           type: 'text', text: message.content
         }
@@ -232,6 +233,8 @@ class MCPClient {
             })
         })
       }
+      }
+
     })
 
     var finalText: string[] = [];
