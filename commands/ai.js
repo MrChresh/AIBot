@@ -197,9 +197,7 @@ export default {
                             if (messageContent.length > 1000) {
                                 //if (content.includes("\n") || messageContent.length > 1900) {
 
-                                if (messageContent) {
-                                    channel.send(messageContent);
-                                };
+                                if (messageContent) { channel.send(messageContent) };
 
                                 messageContent = '';
                             }

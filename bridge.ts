@@ -350,9 +350,7 @@ class MCPClient {
 
                 } else {
                   result = 'Invalid tool choice';
-
                 }
-                finalText.push(result);
               } catch (e: any) {
                 console.log(e);
                 result = String(e);
