@@ -354,18 +354,19 @@ class MCPClient {
                   );
                   //httpResponse.write(JSON.stringify(result));
                   result = JSON.stringify(resultObj);
+
                 } else {
                   result = 'Invalid tool choice';
 
                 }
-
+                finalText.push(result);
               } catch (e: any) {
                 console.log(e);
                 result = String(e);
               }
               //httpResponse.write('{"message": {"content":' + JSON.stringify(result) + '}}');
               console.log(resultObj);
-
+              
 
 
 
@@ -381,7 +382,7 @@ class MCPClient {
                 content: JSON.stringify(result.content) ?? result
               });
 
-              finalText.push(JSON.stringify(result.content))
+              
 
               var returnData: any = data;
               returnData.messages = messages;
