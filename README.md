@@ -13,7 +13,7 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Discord command interface for model interactions
 - Read text type files from attachments
 - Read image type files from attachments
-- Response streaming (will send every 1900 characters)
+- Response streaming (will send every 1000 characters)
 - Allowed users via allowed_users.json to prevent abuse
 - Chat history per user
 - Cancel command
