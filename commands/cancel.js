@@ -16,10 +16,9 @@ export default {
             client.AIBot.requests[messageAuthor] = [];
             return interaction.reply('No requests found.');
         }
-        client.AIBot.requests[messageAuthor].forEach((request) => {
-            request.abort();
+        Object.keys(client.AIBot.requests[messageAuthor]).forEach(function (requestId) {
+            client.AIBot.requests[messageAuthor][requestId].abort();
         })
-        client.AIBot.requests[messageAuthor] = null;
-        return interaction.reply('All requests have been cancelled.');
+        return await interaction.reply('All requests have been cancelled.');
     }
 }

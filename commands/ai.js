@@ -114,7 +114,7 @@ export default {
 
 
 
-            if (!client.AIBot.requests[messageAuthor]) {
+            if (!client.AIBot.requests[messageAuthor]?.length) {
                 client.AIBot.requests[messageAuthor] = []
             }
 
@@ -135,7 +135,11 @@ export default {
 
             const controller = new AbortController();
             const signal = controller.signal;
-            const requestId = client.AIBot.requests[messageAuthor].push(controller) - 1;
+            const requestId = String(Date.now().toString(36));
+
+            client.AIBot.requests[messageAuthor][requestId] = controller;
+
+            console.log('request id ' + requestId)
 
             const options = {
                 hostname: '127.0.0.1',
@@ -206,24 +210,34 @@ export default {
 
                 });
                 res.on('end', () => {
-                    console.log('No more data in response.');
+                    console.log(' No more data in response.');
                     if (messageContent) { channel.send(messageContent); }
                     client.AIBot.Messages[messageAuthor].push({
                         role: 'assistant',
                         content: fullAssistantMessage
                     });
-                    channel.send('No more data in response.');
+                    channel.send(res.statusCode + ' No more data in response.');
+                });
+                res.on('finish', () => {
+                    client.AIBot.requests[messageAuthor].splice(client.AIBot.requests[messageAuthor].indexOf(requestId));
                 });
             });
 
             req.on('abort', () => {
                 console.log(`Request aborted.`);
-                channel.send('Request has been aborted.');
+                if (messageContent) { channel.send(messageContent); }
+                    client.AIBot.Messages[messageAuthor].push({
+                    role: 'assistant',
+                    content: fullAssistantMessage
+                });
+                client.AIBot.requests[messageAuthor].splice(client.AIBot.requests[messageAuthor].indexOf(requestId));
+                channel.send(req.statusCode + 'Request has been aborted.');
             });
 
             req.on('error', (e) => {
-                console.error(`problem with request: ${e.message}`);
-                channel.send('An error occured with the request.');
+                console.error(`An error or abort occured with the request.: ${e.message}`);
+                channel.send('An error or abort occured with the request.');
+                client.AIBot.requests[messageAuthor].splice(client.AIBot.requests[messageAuthor].indexOf(requestId));
             });
 
 
@@ -233,8 +247,6 @@ export default {
             // Write data to request body
             req.write(postData);
             req.end();
-
-            client.AIBot.requests[messageAuthor].splice(requestId, 1);
 
         } catch (e) {
             console.log(e);

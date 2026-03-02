@@ -337,7 +337,7 @@ class MCPClient {
                 finalText.push(
                   '[Calling tool: ' + toolCall + ']'
                 );
-                httpResponse.write('{"message": {"thinking": "' + '[Calling tool: ' + JSON.stringify(toolCall).replace(/["]/g, '') + ']"' + '}}');
+                httpResponse.write('{"message": {"thinking": "' + '[Calling tool: ' + JSON.stringify(toolCall).replace(/[\"\']/g, '') + ']"' + '}}');
               } catch (e) {
                 console.log(e)
                 return;
