@@ -360,6 +360,7 @@ class MCPClient {
                 }
 
               } catch (e: any) {
+                console.log(e);
                 result = String(e);
               }
               //httpResponse.write('{"message": {"content":' + JSON.stringify(result) + '}}');
