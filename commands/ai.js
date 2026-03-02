@@ -175,7 +175,7 @@ export default {
                         if (thinking.length) {
                             process.stdout.write(thinking);
                             messageContentThinking = messageContentThinking + thinking;
-                            if (messageContentThinking.length > 1900) {
+                            if (messageContentThinking.length > 1000) {
                                 //if (thinking.includes("\n") || messageContentThinking.length > 1900) {
                                 if (messageContentThinking) { channel.send(messageContentThinking) };
                                 messageContentThinking = '';
@@ -194,7 +194,7 @@ export default {
                             process.stdout.write(content);
                             messageContent += content;
                             fullAssistantMessage += content;
-                            if (messageContent.length > 1900) {
+                            if (messageContent.length > 1000) {
                                 //if (content.includes("\n") || messageContent.length > 1900) {
 
                                 if (messageContent) {

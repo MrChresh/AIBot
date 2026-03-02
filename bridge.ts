@@ -191,10 +191,6 @@ class MCPClient {
 
     var messages: any[] = data.messages;
 
-
-
-
-
     // Get available tools
     const availableTools: any[] = this.MCPServerManager.getAllToolsAdapter();
 
@@ -229,7 +225,6 @@ class MCPClient {
           })
         }
       }
-
     })
 
     var finalText: string[] = [];
@@ -343,8 +338,6 @@ class MCPClient {
                 return;
               }
 
-  
-              
               // Execute tool call
               try {
                 if (this.MCPServerManager.findTool(toolName)) {
@@ -367,10 +360,6 @@ class MCPClient {
               //httpResponse.write('{"message": {"content":' + JSON.stringify(result) + '}}');
               console.log(resultObj);
               
-
-
-
-              // Add Claude's response (including tool use) to messages
               messages.push({
                 role: "assistant",
                 content: finalText.join(''),
@@ -381,8 +370,6 @@ class MCPClient {
                 role: "user",
                 content: JSON.stringify(result.content) ?? result
               });
-
-              
 
               var returnData: any = data;
               returnData.messages = messages;
