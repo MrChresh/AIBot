@@ -356,7 +356,7 @@ class MCPClient {
                 result = String(e);
               }
               //httpResponse.write('{"message": {"content":' + JSON.stringify(result) + '}}');
-              console.log(resultObj);
+              console.log(result);
               
               messages.push({
                 role: "assistant",
