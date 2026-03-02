@@ -72,9 +72,12 @@ export default {
                     }
                 }
             }
-
-            await interaction.reply('Prompt will be sent, it might take some time.');
-            //console.log(prompt);
+            try {
+                await interaction.reply('Prompt will be sent, it might take some time.');
+                //console.log(prompt);
+            } catch(e) {
+                console.log(e);
+            }
 
             const systemPrompt = 'You are ' + client.user.tag + ', a highly capable AI assistant. Your goal is to fully complete the users requested task before handing the conversation back to them. Keep working autonomously until the task is fully resolved. Be thorough in gathering information. Before replying, make sure you have all the details necessary to provide a complete solution. Use additional tools or ask clarifying questions when needed, but if you can find the answer on your own, avoid asking the user for help. When using tools, briefly describe your intended steps first—for example, which tool youll use and for what purpose. Adhere to this in all languages.respond in the same language as the users query.';
 
@@ -128,7 +131,7 @@ export default {
                     'seed': 42
                 }
             });
-            //console.log(postData);
+            console.log(postData);
 
             const controller = new AbortController();
             const signal = controller.signal;

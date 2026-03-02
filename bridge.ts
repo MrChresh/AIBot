@@ -187,7 +187,7 @@ class MCPClient {
 
   }
 
-  async processQuery(data: any, doInstructions: boolean, httpResponse: http.ServerResponse): Promise<string> {
+  async processQuery(data: any, doInstructions: boolean, httpResponse: http.ServerResponse): Promise<void> {
 
     var messages: any[] = data.messages;
 
@@ -296,10 +296,11 @@ class MCPClient {
 
         if (message) {
           if (message.choices[0].delta?.reasoning_content) {
-            httpResponse.write('{"message": {"thinking":' + JSON.stringify(message.choices[0].delta?.reasoning_content) + '}}')
+            httpResponse.write('{"message": {"thinking":' + JSON.stringify(message.choices[0].delta?.reasoning_content) + '}}');
           }
           else if (message.choices[0].delta?.content) {
-            httpResponse.write('{"message": {"content":' + JSON.stringify(message.choices[0].delta?.content) + '}}')
+            httpResponse.write('{"message": {"content":' + JSON.stringify(message.choices[0].delta?.content) + '}}');
+            finalText.push(JSON.stringify(message.choices[0].delta?.content));
           }
           //process.stdout.write(content);
           //httpResponse.write('{"message": {"content":' + JSON.stringify(content) + '}}')
@@ -330,17 +331,20 @@ class MCPClient {
               lastsQuerry = false;
               console.log('Entered tool call')
               try {
-                httpResponse.write(JSON.stringify('{"message": {"content": "' + toolName + JSON.stringify(toolArgs) + '"}}'))
                 var toolCall = JSON.parse('{"name":"' + toolName + '","arguments":' + toolArgs + '}');
+                console.log(toolCall);
+
+                finalText.push(
+                  '[Calling tool: ' + toolCall + ']'
+                );
+                httpResponse.write('{"message": {"content": "' + '[Calling tool: ' + JSON.stringify(toolCall).replace(/["]/g, '') + ']"' + '}}');
               } catch (e) {
                 console.log(e)
                 return;
               }
 
-              finalText.push(
-                `[Calling tool ${toolName} with args ${JSON.stringify(toolArgs)}]`
-              );
-
+  
+              
               // Execute tool call
               try {
                 if (this.MCPServerManager.findTool(toolName)) {
@@ -416,7 +420,7 @@ class MCPClient {
     req.write(postData);
     req.end();
 
-    return finalText.join('');
+    //return finalText.join('');
   }
 }
 
