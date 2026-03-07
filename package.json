@@ -1,9 +1,7 @@
 {
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
-    "i": "^0.3.7",
     "node-base64-image": "^2.2.0",
     "npm": "^11.11.0"
   },

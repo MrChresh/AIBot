@@ -17,12 +17,12 @@ This Discord bot integrates with the [ollama-mcp-bridge](https://github.com/joni
 - Allowed users via allowed_users.json to prevent abuse
 - Chat history per user
 - Cancel command
-- Contains a MCP bridge for llama.cpp (bridge.ts in development)
+- In development MCP-bridge avaiailable: [llamacppMCPBridge](https://github.com/MrChresh/llamacppMCPBridge)
 
 ## Prerequisites
 
 1. [Ollama](https://ollama.com/) installed and running
-2. [ollama-mcp-bridge](https://github.com/jonigl/ollama-mcp-bridge) (optional for bridge integration)
+2. [ollama-mcp-bridge](https://github.com/jonigl/ollama-mcp-bridge) (optional for bridge integration) || [llamacppMCPBridge](https://github.com/MrChresh/llamacppMCPBridge)
 
 ## Installation
 
